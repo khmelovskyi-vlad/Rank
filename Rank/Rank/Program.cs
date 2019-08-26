@@ -14,20 +14,18 @@ namespace Rank
         {
             Console.WriteLine("Rang game");
             var test = Rank();
-            Console.WriteLine();
             Console.WriteLine($"Your simbol rank is {test}");
             Console.ReadKey();
         }
         static int Rank ()
         {
             string numAndBracket = ReadString("string with numbers, '(' and ')' ");
-            char num = CharRead("your simbol");
-            Console.WriteLine();
-            char numInString = CharRead("number your simbol in string");
             int rank = 0;
-            var havingNum = false;
             while (true)
             {
+                char num = CharRead("your simbol or click escape");
+                Console.WriteLine();
+                int numInString = IntRead("number your simbol in string or click escape");
                 for (int i = 0; i < numAndBracket.Length; i++)
                 {
                     if (numAndBracket[i] == '(')
@@ -38,38 +36,23 @@ namespace Rank
                     {
                         rank--;
                     }
-                    if (numAndBracket[i] == num && numInString != first + 2)
+                    else if (numAndBracket[i] == num && numInString != 1)
                     {
                         numInString--;
-                        continue;
                     }
-                    else if (numAndBracket[i] == num && numInString == first + 2)
+                    else if (numAndBracket[i] == num && numInString == 1)
                     {
-                        havingNum = true;
-                        break;
+                        return rank;
                     }
                 }
-                if (havingNum == false)
-                {
-                    Console.WriteLine();
                     Console.WriteLine("Don`t have your simbol in string");
-                    num = CharRead("your new simbol or click escape");
-                    Console.WriteLine();
-                    numInString = CharRead("number your new simbol in string or click escape");
                     continue;
-                }
-                else
-                {
-                    return rank;
-                }
             }
         }
         static string ReadString(string readString)
         {
             Console.WriteLine($"Enter {readString}");
-            string line = "";
-            var leftBracket = 0;
-            var rightBracket = 0;
+            (string line, int leftBracket, int rightBracket) = NullArguments();
             while (true)
             {
                 var key = Console.ReadKey();
@@ -95,31 +78,40 @@ namespace Rank
                     rightBracket++;
                     line += key.KeyChar;
                 }
-                else if (key.Key == ConsoleKey.Enter)
-                {
-                    if (leftBracket == rightBracket)
-                    {
-                        Console.WriteLine();
-                        return line;
-                    }
-                    else
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine($"Bet input '(' != ')', try again or click escape");
-                        line = "";
-                        leftBracket = 0;
-                        rightBracket = 0;
-                        continue;
-                    }
-                }
                 else
                 {
-                    Console.WriteLine();
-                    Console.WriteLine($"Bet input {key.KeyChar}, try again or click escape");
-                    line = "";
-                    continue;
+                    var flag = ElseLine(leftBracket, rightBracket, key);
+                    if (flag)
+                    {
+                        return line;
+                    }
+                    (line, leftBracket, rightBracket) = NullArguments();
                 }
             }
+        }
+        static bool ElseLine(int leftBracket, int rightBracket, ConsoleKeyInfo key)
+        {
+            var flag = false;
+            Console.WriteLine();
+            if (key.Key == ConsoleKey.Enter)
+            {
+                if (leftBracket == rightBracket)
+                {
+                    flag = true;
+                    return flag;
+                }
+                Console.WriteLine($"Bet input '(' != ')', try again or click escape");
+                return flag;
+            }
+            Console.WriteLine($"Bet input {key.KeyChar}, try again or click escape");
+            return flag;
+        }
+        static (string line, int leftBracket, int rightBracket) NullArguments()
+        {
+            string line = "";
+            int leftBracket = 0;
+            int rightBracket = 0;
+            return (line, leftBracket, rightBracket);
         }
         static char CharRead (string readChar)
         {
@@ -138,10 +130,33 @@ namespace Rank
                 else
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Bet input {readChar}, try again or click escape");
+                    Console.WriteLine($"Bet input, try again or click escape");
+                    Console.WriteLine($"Enter {readChar}");
                     continue;
                 }
             }
+        }
+        static int IntRead(string readChar)
+        {
+            Console.WriteLine($"Enter {readChar}");
+            do
+            {
+                try
+                {
+                    var key = Console.ReadKey();
+                    if (key.Key == ConsoleKey.Escape)
+                    {
+                        throw new OperationCanceledException();
+                    }
+                    var line = Console.ReadLine();
+                    var keyLine = $"{key.KeyChar}{line}";
+                    return Convert.ToInt32(keyLine);
+                }
+                catch(FormatException ex)
+                {
+                    Console.WriteLine($"Ber input {ex.Message}, try again or click Escape");
+                }
+            } while (true);
         }
     }
 }
